@@ -1,0 +1,38 @@
+global
+  log 127.0.0.1 local0 notice
+  maxconn 2000
+  user haproxy
+  group haproxy
+
+defaults
+  log global
+  mode http
+  retries 3
+
+  timeout connect 5000
+  timeout client 10000
+  timeout server 10000
+
+  balance roundrobin
+
+  option httplog
+  option dontlognull
+  option redispatch
+
+frontend http
+  bind :80
+  default_backend coreos
+
+backend coreos
+  {{range $server := .infra_haproxy}}
+  server {{Base $server.Key}} {{$server.Value}} check
+  {{end}}
+
+listen stats :9000
+  mode http
+
+  stats enable
+  stats hide-version
+  stats realm Haproxy
+  stats uri /
+  stats auth webhippie:webhippie

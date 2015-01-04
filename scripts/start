@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+export HOST_IP=${HOST_IP:-127.0.0.1}
+export ETCD=$HOST_IP:4001
+
+echo "Loading haproxy.cfg from $ETCD"
+until confd -onetime -backend etcd -node $ETCD -config-file /etc/confd/conf.d/haproxy.toml > /var/log/confd.log 2>&1
+do
+  sleep 10
+  echo -n "."
+done
+
+echo "Running confd in the background"
+confd -interval 30 -quiet -backend etcd -node $ETCD -config-file /etc/confd/conf.d/haproxy.toml > /var/log/confd.log 2>&1
