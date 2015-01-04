@@ -10,7 +10,7 @@ EnvironmentFile=/etc/environment
 ExecStartPre=-/usr/bin/docker kill %p-%i
 ExecStartPre=-/usr/bin/docker rm %p-%i
 
-ExecStart=/usr/bin/docker run --name %p-%i -p %i:80 coreos/apache
+ExecStart=/usr/bin/docker run --name %p-%i -p %i:80 coreos/apache:latest
 ExecStartPost=/usr/bin/etcdctl set /infra/haproxy/%p-%i ${COREOS_PUBLIC_IPV4}:%i
 
 ExecStop=/usr/bin/docker stop %p-%i
