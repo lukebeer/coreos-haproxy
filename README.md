@@ -1,2 +1,5 @@
-coreos-haproxy
---------------
+# CoreOS HAProxy
+
+## License
+
+MIT
