@@ -5,7 +5,7 @@ After=docker.service
 
 [Service]
 User=core
-EnvironmentFile=/etc/environment
+EnvironmentFile=-/etc/environment
 
 ExecStartPre=-/usr/bin/docker kill %p-%i
 ExecStartPre=-/usr/bin/docker rm %p-%i
