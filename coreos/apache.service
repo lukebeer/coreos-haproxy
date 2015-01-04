@@ -1,0 +1,24 @@
+[Unit]
+Description=Apache Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+User=core
+EnvironmentFile=/etc/environment
+
+ExecStartPre=-/usr/bin/docker kill %p-%i
+ExecStartPre=-/usr/bin/docker rm %p-%i
+
+ExecStart=/usr/bin/docker run --name %p-%i -p %i:80 coreos/apache
+ExecStartPost=/usr/bin/etcdctl set /infra/haproxy/%p-%i ${COREOS_PUBLIC_IPV4}:%i
+
+ExecStop=/usr/bin/docker stop %p-%i
+ExecStopPost=/usr/bin/etcdctl rm /infra/haproxy/%p-%i
+
+TimeoutSec=15min
+Restart=on-failure
+RestartSec=15s
+
+[X-Fleet]
+Conflicts=*@%i.service

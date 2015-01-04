@@ -1,0 +1,24 @@
+[Unit]
+Description=HAProxy Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+User=core
+EnvironmentFile=/etc/environment
+
+ExecStartPre=-/usr/bin/docker kill %p
+ExecStartPre=-/usr/bin/docker rm %p
+
+ExecStart=/usr/bin/docker run --name %p -p %i:80 -p 9000:9000 -e HOST_IP=${COREOS_PUBLIC_IPV4} webhippie/coreos-haproxy:latest
+ExecStartPost=/usr/bin/etcdctl set /infra/haproxy/%p ${COREOS_PUBLIC_IPV4}:%i
+
+ExecStop=/usr/bin/docker stop %p
+ExecStopPost=/usr/bin/etcdctl rm /infra/haproxy/%p
+
+TimeoutSec=15min
+Restart=on-failure
+RestartSec=15s
+
+[X-Fleet]
+Conflicts=*@%i.service
