@@ -3,7 +3,8 @@ src = "haproxy.cfg.tmpl"
 dest = "/etc/haproxy/haproxy.cfg"
 
 keys = [
-  "/infra/haproxy"
+  "/infra/haproxy",
+  "/infra/fqdn"
 ]
 
 reload_cmd = "/usr/sbin/service haproxy reload"
