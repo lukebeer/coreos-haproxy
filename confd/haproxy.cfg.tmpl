@@ -1,51 +1,53 @@
 global
-  log 127.0.0.1 local0 notice
-  maxconn 2000
-  user haproxy
-  group haproxy
+    log 127.0.0.1 local0 notice
+    maxconn 2000
+    user haproxy
+    group haproxy
 
 defaults
-  log global
-  mode http
-  retries 3
+    log global
+    mode http
+    retries 3
 
-  timeout connect 5000
-  timeout client 10000
-  timeout server 10000
+    timeout connect 5000
+    timeout client 10000
+    timeout server 10000
 
-  balance roundrobin
+    balance roundrobin
+    option tcplog
+    option dontlognull
+    option redispatch
 
-  option httplog
-  option dontlognull
-  option redispatch
+    errorfile 400 /etc/haproxy/errors/400.http
+    errorfile 403 /etc/haproxy/errors/403.http
+    errorfile 408 /etc/haproxy/errors/408.http
+    errorfile 500 /etc/haproxy/errors/500.http
+    errorfile 502 /etc/haproxy/errors/502.http
+    errorfile 503 /etc/haproxy/errors/503.http
+    errorfile 504 /etc/haproxy/errors/504.http
 
-  errorfile 400 /etc/haproxy/errors/400.http
-  errorfile 403 /etc/haproxy/errors/403.http
-  errorfile 408 /etc/haproxy/errors/408.http
-  errorfile 500 /etc/haproxy/errors/500.http
-  errorfile 502 /etc/haproxy/errors/502.http
-  errorfile 503 /etc/haproxy/errors/503.http
-  errorfile 504 /etc/haproxy/errors/504.http
+listen stats
+    bind *:50000
+    mode http
+    stats enable
+    stats hide-version
+    stats realm Haproxy\ Statistics
+    stats uri /
+    stats auth dev:cunt
 
-frontend http
-  bind :80
-{{range gets "/infra/haproxy/*"}}
-  acl is_{{base .Key}} hdr(host) -i {{base .Key}}.{{getenv "FQDN"}}
-{{end}}
-{{range gets "/infra/haproxy/*"}}
-  use_backend {{base .Key}} if is_{{base .Key}}
-{{end}}
+frontend socks5
+    mode tcp
+    bind *:5555
+    default_backend sshsocks
 
-{{range gets "/infra/haproxy/*"}}
+backend sshsocks
+    mode tcp
+    option tcplog
+    option external-check
+    external-check command proxcheck
+    external-check path "/usr/bin"
+    balance roundrobin
+{{range gets "/proxy/gateways/*"}}
 backend {{base .Key}}
-  server {{base .Key}} {{.Value}} check
+    server {{base .Key}} {{.Value}} check
 {{end}}
-
-listen stats :9000
-  mode http
-
-  stats enable
-  stats hide-version
-  stats realm Haproxy
-  stats uri /
-  stats auth webhippie:webhippie

@@ -10,7 +10,7 @@ EnvironmentFile=-/etc/environment
 ExecStartPre=-/usr/bin/docker kill %p
 ExecStartPre=-/usr/bin/docker rm %p
 
-ExecStart=/usr/bin/docker run --name %p -p %i:80 -p 9000:9000 -e HOST_IP=${COREOS_PUBLIC_IPV4} -e FQDN=${FQDN} webhippie/coreos-haproxy:latest
+ExecStart=/usr/bin/docker run --name %p -p %i:80 -p 9000:9000 -e HOST_IP=${COREOS_PUBLIC_IPV4} -e FQDN=${FQDN} lukebeer/coreos-haproxy:latest
 
 ExecStop=/usr/bin/docker stop %p
 
